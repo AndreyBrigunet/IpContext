@@ -31,26 +31,29 @@ A high-performance IP geolocation service similar to ip-api.com, built with Go a
 
 3. **Build and Run**
    ```bash
-   docker-compose up -d
+   docker compose build --no-cache
+   docker compose up -d
    ```
 
 4. **Verify the Service**
    ```bash
-   curl "http://localhost:3280/lookup?ip=8.8.8.8"
+   curl "http://localhost:3280/"
    ```
 
 ## API Endpoints
 
-### GET /lookup
+### Endpoints
 
-Look up geolocation information for an IP address.
+- `GET /` — returns info for the requester IP.
+- `GET /:ip` — returns info for the specified IP (e.g., `/8.8.8.8`).
 
-**Query Parameters:**
-- `ip` - (optional) IP address to look up. If not provided, the client's IP will be used.
-
-**Example Request:**
+**Example Requests:**
 ```bash
-curl "http://localhost:3280/lookup?ip=8.8.8.8"
+# Requester IP
+curl "http://localhost:3280/"
+
+# Specific IP (short form)
+curl "http://localhost:3280/8.8.8.8"
 ```
 
 **Example Response (200 OK):**
@@ -71,11 +74,18 @@ curl "http://localhost:3280/lookup?ip=8.8.8.8"
   "lon": -122.0574,
   "timezone": "America/Los_Angeles",
   "offset": -25200,
-  "currency": "USD",
+  "currencyCode": "USD",
+  "currencySymbol": "$",
+  "isEUCountry": false,
+  "languages": ["en"],
+  "neighbours": [
+    {"countryCode": "CA", "countryName": "Canada"},
+    {"countryCode": "MX", "countryName": "Mexico"}
+  ],
   "isp": "Google LLC",
-  "org": "Google Public DNS",
+  "org": "Google LLC",
   "as": "AS15169 Google LLC",
-  "asname": "GOOGLE",
+  "asname": "Google LLC",
   "mobile": false,
   "proxy": false,
   "hosting": true
@@ -100,6 +110,9 @@ curl "http://localhost:3280/lookup?ip=8.8.8.8"
 | `GEOIPUPDATE_LICENSE_KEY` | MaxMind license key | Required |
 | `GEOIPUPDATE_EDITION_IDS` | Database editions to download | `GeoLite2-City GeoLite2-ASN` |
 | `GEOIPUPDATE_FREQUENCY` | Update frequency in hours | `24` |
+| `GEONAMES_USERNAME` | GeoNames username to enable neighbours API | empty (disabled) |
+| `NEIGHBOURS_UPDATE_HOURS` | Neighbours refresh interval in hours | `168` (weekly) |
+| `LANGUAGES_UPDATE_HOURS` | Languages refresh interval in hours | `168` (weekly) |
 
 ## Development
 
@@ -113,17 +126,7 @@ curl "http://localhost:3280/lookup?ip=8.8.8.8"
    ./ipapi --db-path /path/to/geoip/databases
    ```
 
-### Running Tests
-
-```bash
-go test ./...
-```
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Acknowledgments
-
-- [MaxMind](https://www.maxmind.com) for the GeoLite2 databases
-- [geoip2-golang](https://github.com/oschwald/geoip2-golang) for the Go MaxMind DB reader
+This project is licensed under the MIT License

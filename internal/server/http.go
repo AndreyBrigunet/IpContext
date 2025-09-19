@@ -18,17 +18,58 @@ type Server struct {
 	log    zerolog.Logger
 }
 
+// handleRoot serves both GET / (client IP) and GET /:ip
+func (s *Server) handleRoot(w http.ResponseWriter, r *http.Request) {
+    path := r.URL.Path
+    var ipStr string
+    if path == "/" {
+        // Use requester IP
+        ipStr = r.Header.Get("X-Forwarded-For")
+        if ipStr == "" {
+            ipStr = r.Header.Get("CF-Connecting-IP")
+            if ipStr == "" {
+                host, _, err := net.SplitHostPort(r.RemoteAddr)
+                if err != nil {
+                    s.respondError(w, "Invalid IP", http.StatusOK)
+                    return
+                }
+                ipStr = host
+            }
+        } else {
+            ips := strings.Split(ipStr, ",")
+            ipStr = strings.TrimSpace(ips[0])
+        }
+    } else {
+        // Expect /:ip
+        ipStr = strings.TrimPrefix(path, "/")
+    }
+
+    ip := net.ParseIP(ipStr)
+    if ip == nil {
+        s.respondError(w, "Invalid IP", http.StatusOK)
+        return
+    }
+
+    resp, err := s.geoIP.Lookup(ip.String())
+    if err != nil {
+        s.log.Error().Err(err).Str("ip", ipStr).Msg("Lookup failed")
+        s.respondError(w, "No data", http.StatusOK)
+        return
+    }
+    s.respondJSON(w, resp, http.StatusOK)
+}
+
 // NewServer creates a new HTTP server
 func NewServer(addr string, geoIP *geoip.GeoIP, logger zerolog.Logger) *Server {
 	s := &Server{
 		geoIP: geoIP,
-		log:    logger,
+		log: logger,
 	}
 
 	r := http.NewServeMux()
-	r.HandleFunc("/lookup", s.handleLookup)
+	r.HandleFunc("/", s.handleRoot)
 	s.server = &http.Server{
-		Addr:    addr,
+		Addr: addr,
 		Handler: r,
 	}
 
@@ -44,49 +85,6 @@ func (s *Server) Start() error {
 // Stop gracefully shuts down the server
 func (s *Server) Stop() error {
 	return s.server.Shutdown(context.Background())
-}
-
-// handleLookup handles the /lookup endpoint
-func (s *Server) handleLookup(w http.ResponseWriter, r *http.Request) {
-	// Get IP from query parameter or from request
-	ipStr := r.URL.Query().Get("ip")
-	if ipStr == "" {
-		// Try to get IP from X-Forwarded-For, CF-Connecting-IP, or RemoteAddr
-		ipStr = r.Header.Get("X-Forwarded-For")
-		if ipStr == "" {
-			ipStr = r.Header.Get("CF-Connecting-IP")
-			if ipStr == "" {
-				// Get IP from RemoteAddr (format: "host:port")
-				host, _, err := net.SplitHostPort(r.RemoteAddr)
-				if err != nil {
-					s.respondError(w, "Invalid IP", http.StatusOK)
-					return
-				}
-				ipStr = host
-			}
-		} else {
-			// X-Forwarded-For can contain multiple IPs, take the first one
-			ips := strings.Split(ipStr, ",")
-			ipStr = strings.TrimSpace(ips[0])
-		}
-	}
-
-	// Validate IP
-	ip := net.ParseIP(ipStr)
-	if ip == nil {
-		s.respondError(w, "Invalid IP", http.StatusOK)
-		return
-	}
-
-	// Lookup IP
-	resp, err := s.geoIP.Lookup(ip.String())
-	if err != nil {
-		s.log.Error().Err(err).Str("ip", ipStr).Msg("Lookup failed")
-		s.respondError(w, "No data", http.StatusOK)
-		return
-	}
-
-	s.respondJSON(w, resp, http.StatusOK)
 }
 
 // respondError sends a JSON error response

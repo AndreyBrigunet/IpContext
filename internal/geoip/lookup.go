@@ -8,6 +8,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/andreybrigunet/ipapi/internal/neighbours"
+	"github.com/andreybrigunet/ipapi/internal/languages"
 	"github.com/oschwald/geoip2-golang"
 	"github.com/rs/zerolog"
 )
@@ -15,55 +17,45 @@ import (
 type GeoIP struct {
 	cityDB    *geoip2.Reader
 	asnDB     *geoip2.Reader
+	neigh     *neighbours.Store
+	langs     *languages.Store
 	logger    zerolog.Logger
 	closeOnce sync.Once
 }
 
 // Response represents the IP lookup response structure
-// Similar to ip-api.com format
 type Response struct {
-	Query         string  `json:"query"`
-	Status        string  `json:"status"`
-	Continent     string  `json:"continent,omitempty"`
-	ContinentCode string  `json:"continentCode,omitempty"`
-	Country       string  `json:"country,omitempty"`
-	CountryCode   string  `json:"countryCode,omitempty"`
-	Region        string  `json:"region,omitempty"`
-	RegionName    string  `json:"regionName,omitempty"`
-	City          string  `json:"city,omitempty"`
-	District      string  `json:"district,omitempty"`
-	Zip           string  `json:"zip,omitempty"`
-	Lat           float64 `json:"lat,omitempty"`
-	Lon           float64 `json:"lon,omitempty"`
-	Timezone      string  `json:"timezone,omitempty"`
-	Offset        int     `json:"offset,omitempty"`
-	Currency      string  `json:"currency,omitempty"`
-	ISP           string  `json:"isp,omitempty"`
-	Org           string  `json:"org,omitempty"`
-	AS            string  `json:"as,omitempty"`
-	ASName        string  `json:"asname,omitempty"`
-	Mobile        bool    `json:"mobile"`
-	Proxy         bool    `json:"proxy"`
-	Hosting       bool    `json:"hosting"`
-}
-
-// CountryCurrency maps country codes to their currencies
-var CountryCurrency = map[string]string{
-	"AD": "EUR", "AL": "ALL", "AM": "AMD", "AT": "EUR", "AZ": "AZN",
-	"BA": "BAM", "BE": "EUR", "BG": "BGN", "BY": "BYN", "CH": "CHF",
-	"CY": "EUR", "CZ": "CZK", "DE": "EUR", "DK": "DKK", "EE": "EUR",
-	"ES": "EUR", "FI": "EUR", "FO": "DKK", "FR": "EUR", "GB": "GBP",
-	"GE": "GEL", "GI": "GIP", "GR": "EUR", "HR": "EUR", "HU": "HUF",
-	"IE": "EUR", "IS": "ISK", "IT": "EUR", "KZ": "KZT", "LI": "CHF",
-	"LT": "EUR", "LU": "EUR", "LV": "EUR", "MC": "EUR", "MD": "MDL",
-	"ME": "EUR", "MK": "MKD", "MT": "EUR", "NL": "EUR", "NO": "NOK",
-	"PL": "PLN", "PT": "EUR", "RO": "RON", "RS": "RSD", "RU": "RUB",
-	"SE": "SEK", "SI": "EUR", "SK": "EUR", "SM": "EUR", "TR": "TRY",
-	"UA": "UAH", "UK": "GBP", "VA": "EUR", "XK": "EUR",
+	Query         string              `json:"query"`
+	Status        string              `json:"status"`
+	Continent     string              `json:"continent,omitempty"`
+	ContinentCode string              `json:"continentCode,omitempty"`
+	Country       string              `json:"country,omitempty"`
+	CountryCode   string              `json:"countryCode,omitempty"`
+	Region        string              `json:"region,omitempty"`
+	RegionName    string              `json:"regionName,omitempty"`
+	City          string              `json:"city,omitempty"`
+	District      string              `json:"district,omitempty"`
+	Zip           string              `json:"zip,omitempty"`
+	Lat           float64             `json:"lat,omitempty"`
+	Lon           float64             `json:"lon,omitempty"`
+	Timezone      string              `json:"timezone,omitempty"`
+	Offset        int                 `json:"offset,omitempty"`
+	CurrencyCode  string              `json:"currencyCode,omitempty"`
+	CurrencySymbol string              `json:"currencySymbol,omitempty"`
+	ISP           string              `json:"isp,omitempty"`
+	Org           string              `json:"org,omitempty"`
+	AS            string              `json:"as,omitempty"`
+	ASName        string              `json:"asname,omitempty"`
+	Mobile        bool                `json:"mobile"`
+	Proxy         bool                `json:"proxy"`
+	Hosting       bool                `json:"hosting"`
+	Neighbours    []neighbours.Neighbour `json:"neighbours,omitempty"`
+	IsEUCountry   bool                `json:"isEUCountry"`
+	Languages     []string            `json:"languages,omitempty"`
 }
 
 // New creates a new GeoIP service instance
-func New(dbPath string, logger zerolog.Logger) (*GeoIP, error) {
+func New(dbPath string, neigh *neighbours.Store, langs *languages.Store, logger zerolog.Logger) (*GeoIP, error) {
 	cityDB, err := geoip2.Open(filepath.Join(dbPath, "GeoLite2-City.mmdb"))
 	if err != nil {
 		return nil, err
@@ -78,6 +70,8 @@ func New(dbPath string, logger zerolog.Logger) (*GeoIP, error) {
 	return &GeoIP{
 		cityDB: cityDB,
 		asnDB:  asnDB,
+		neigh:  neigh,
+		langs:  langs,
 		logger: logger,
 	}, nil
 }
@@ -137,9 +131,30 @@ func (g *GeoIP) Lookup(ipStr string) (*Response, error) {
 		resp.Org = asn.AutonomousSystemOrganization
 	}
 
-	// Set currency based on country code
-	if currency, ok := CountryCurrency[city.Country.IsoCode]; ok {
-		resp.Currency = currency
+	// Add currency information
+	if code, ok := countryCurrencyMap[city.Country.IsoCode]; ok {
+		resp.CurrencyCode = code
+
+		if sym, ok := currencySymbols[code]; ok {
+			resp.CurrencySymbol = sym
+		} else {
+			resp.CurrencySymbol = code
+		}
+	}
+
+	// Attach neighbours if available
+	if g.neigh != nil && resp.CountryCode != "" {
+		resp.Neighbours = g.neigh.Get(resp.CountryCode)
+	}
+
+	// Determine EU membership
+	if resp.CountryCode != "" {
+		resp.IsEUCountry = IsEUCountry(resp.CountryCode)
+	}
+
+	// Attach languages if available
+	if g.langs != nil && resp.CountryCode != "" {
+		resp.Languages = g.langs.Get(resp.CountryCode)
 	}
 
 	// Compute timezone offset in seconds (relative to UTC) as in ip-api

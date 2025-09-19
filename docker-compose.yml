@@ -9,6 +9,7 @@ services:
       - geoip_data:/app/data
     environment:
       - TZ=Europe/Chisinau
+      - DB_PATH=/app/data
       - GEONAMES_USERNAME=${GEONAMES_USERNAME:-}
       - NEIGHBOURS_UPDATE_HOURS=${NEIGHBOURS_UPDATE_HOURS:-168}
       - LANGUAGES_UPDATE_HOURS=${LANGUAGES_UPDATE_HOURS:-168}

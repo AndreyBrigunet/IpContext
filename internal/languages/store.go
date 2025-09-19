@@ -73,7 +73,7 @@ func (s *Store) refreshAll() {
 		if err := s.refresh(cc); err != nil {
 			s.log.Warn().Err(err).Str("country", cc).Msg("Failed to refresh languages")
 		}
-		// be polite to GeoNames
+
 		time.Sleep(1100 * time.Millisecond)
 	}
 }

@@ -1,0 +1,34 @@
+services:
+  geoip-app:
+    build:
+      context: .
+      target: runner
+    ports:
+      - "3280:3280"
+    volumes:
+      - geoip_data:/app/data
+    environment:
+      - TZ=UTC
+    depends_on:
+      - geoip-update
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:3280/lookup"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  geoip-update:
+    image: maxmindinc/geoipupdate:latest
+    env_file:
+      - .env
+    environment:
+      - GEOIPUPDATE_EDITION_IDS=GeoLite2-City GeoLite2-ASN
+      - GEOIPUPDATE_FREQUENCY=24
+      - GEOIPUPDATE_DB_DIR=/geoip_data
+    volumes:
+      - geoip_data:/geoip_data
+    restart: unless-stopped
+
+volumes:
+  geoip_data:

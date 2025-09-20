@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/andreybrigunet/ipapi/cache"
 	"github.com/andreybrigunet/ipapi/neighbours"
 	"github.com/andreybrigunet/ipapi/languages"
 	"github.com/oschwald/geoip2-golang"
@@ -22,6 +23,7 @@ type GeoIP struct {
 	langs     *languages.Store
 	logger    zerolog.Logger
 	closeOnce sync.Once
+	cache     *cache.Cache
 }
 
 // Response represents the IP lookup response structure
@@ -47,16 +49,13 @@ type Response struct {
 	Org           string              `json:"org,omitempty"`
 	AS            string              `json:"as,omitempty"`
 	ASName        string              `json:"asname,omitempty"`
-	Mobile        bool                `json:"mobile"`
-	Proxy         bool                `json:"proxy"`
-	Hosting       bool                `json:"hosting"`
 	Neighbours    []neighbours.Neighbour `json:"neighbours,omitempty"`
 	IsEUCountry   bool                `json:"isEUCountry"`
 	Languages     []string            `json:"languages,omitempty"`
 }
 
 // New creates a new GeoIP service instance
-func New(dbPath string, neigh *neighbours.Store, langs *languages.Store, logger zerolog.Logger) (*GeoIP, error) {
+func New(dbPath string, neigh *neighbours.Store, langs *languages.Store, logger zerolog.Logger, cacheTTL time.Duration) (*GeoIP, error) {
 	cityDB, err := geoip2.Open(filepath.Join(dbPath, "GeoLite2-City.mmdb"))
 	if err != nil {
 		return nil, err
@@ -74,6 +73,7 @@ func New(dbPath string, neigh *neighbours.Store, langs *languages.Store, logger 
 		neigh:  neigh,
 		langs:  langs,
 		logger: logger,
+		cache:  cache.New(cacheTTL),
 	}, nil
 }
 
@@ -87,6 +87,13 @@ func (g *GeoIP) LookupWithContext(ctx context.Context, ipStr string) (*Response,
 	ip := net.ParseIP(ipStr)
 	if ip == nil {
 		return nil, errors.New("invalid IP address")
+	}
+
+	// Check cache first for ultra-fast response
+	if cached, found := g.cache.Get(ipStr); found {
+		if resp, ok := cached.(*Response); ok {
+			return resp, nil
+		}
 	}
 
 	// Check if context is cancelled
@@ -122,9 +129,6 @@ func (g *GeoIP) LookupWithContext(ctx context.Context, ipStr string) (*Response,
 		Lat:        city.Location.Latitude,
 		Lon:        city.Location.Longitude,
 		Timezone:   city.Location.TimeZone,
-		Mobile:     false,
-		Proxy:      false,
-		Hosting:    false,
 	}
 
 	// Add region data if available
@@ -171,12 +175,10 @@ func (g *GeoIP) LookupWithContext(ctx context.Context, ipStr string) (*Response,
 	}
 
 	// Compute timezone offset in seconds (relative to UTC) as in ip-api
-	if resp.Timezone != "" {
-		if loc, err := time.LoadLocation(resp.Timezone); err == nil {
-			_, offset := time.Now().In(loc).Zone()
-			resp.Offset = offset
-		}
-	}
+	resp.Offset = GetTimezoneOffset(resp.Timezone)
+
+	// Cache the response for future requests
+	g.cache.Set(ipStr, resp)
 
 	return resp, nil
 }

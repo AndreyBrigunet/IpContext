@@ -142,6 +142,15 @@ func parseLanguages(s string) []string {
 // Get returns languages for a country code
 func (s *Store) Get(countryCode string) []string {
 	s.mu.RLock()
-	defer s.mu.RUnlock()
-	return s.data[countryCode]
+	data := s.data[countryCode]
+	s.mu.RUnlock()
+	
+	// Return a copy to avoid data races
+	if data == nil {
+		return nil
+	}
+	
+	result := make([]string, len(data))
+	copy(result, data)
+	return result
 }

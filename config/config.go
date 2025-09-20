@@ -17,6 +17,7 @@ type Config struct {
 	GeoNamesUser         string
 	NeighboursUpdateHours int
 	LanguagesUpdateHours  int
+	CacheTTLMinutes      int
 }
 
 // Load reads environment variables and flags, applying sane defaults.
@@ -31,6 +32,7 @@ func Load() *Config {
 		GeoNamesUser:          getEnv("GEONAMES_USERNAME", ""),
 		NeighboursUpdateHours: getEnvInt("NEIGHBOURS_UPDATE_HOURS", 168),
 		LanguagesUpdateHours:  getEnvInt("LANGUAGES_UPDATE_HOURS", 168),
+		CacheTTLMinutes:       getEnvInt("CACHE_TTL_MINUTES", 5),
 	}
 
 	// Define flags that can override env

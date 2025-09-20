@@ -34,8 +34,8 @@ A high-performance IP geolocation service similar to ip-api.com, built with Go a
 
 3. **Deploy with Pre-built Image**
    ```bash
-   docker compose -f docker-compose.dev.yml build --no-cache
-   docker compose -f docker-compose.dev.yml up -d
+   docker compose build --no-cache
+   docker compose up -d
    ```
 
 4. **Verify the Service**
@@ -48,22 +48,9 @@ A high-performance IP geolocation service similar to ip-api.com, built with Go a
 
 For development with local builds:
 ```bash
+docker compose -f docker-compose.dev.yml build --no-cache
 docker compose -f docker-compose.dev.yml up -d
 ```
-
-### GitHub Actions CI/CD
-
-This project uses GitHub Actions for automated building and publishing of Docker images:
-
-1. **Automatic Builds**: Every push to `main`/`master` branch triggers a build
-2. **Multi-platform**: Builds for both `linux/amd64` and `linux/arm64`
-3. **Security Scanning**: Includes Trivy vulnerability scanning
-4. **Container Registry**: Images are published to GitHub Container Registry (ghcr.io)
-
-**Available Image Tags:**
-- `ghcr.io/andreybrigunet/ipapi:latest` - Latest stable build
-- `ghcr.io/andreybrigunet/ipapi:main` - Latest main branch build
-- `ghcr.io/andreybrigunet/ipapi:v1.0.0` - Specific version tags
 
 ## API Endpoints
 
@@ -112,9 +99,6 @@ curl "http://localhost:3280/8.8.8.8"
   "org": "Google LLC",
   "as": "AS15169 Google LLC",
   "asname": "Google LLC",
-  "mobile": false,
-  "proxy": false,
-  "hosting": true
 }
 ```
 
@@ -139,19 +123,68 @@ curl "http://localhost:3280/8.8.8.8"
 | `GEONAMES_USERNAME` | GeoNames username to enable neighbours API | empty (disabled) |
 | `NEIGHBOURS_UPDATE_HOURS` | Neighbours refresh interval in hours | `168` (weekly) |
 | `LANGUAGES_UPDATE_HOURS` | Languages refresh interval in hours | `168` (weekly) |
+| `CACHE_TTL_MINUTES` | In-memory cache TTL in minutes | `5` |
+| `LISTEN_ADDR` | Server listen address | `:3280` |
+| `LOG_LEVEL` | Logging level (debug, info, warn, error) | `info` |
+| `LOG_FORMAT` | Log format (json, console) | `console` |
 
-## Development
+### Performance Tuning
 
-### Building Locally
+For **maximum performance** in production:
 
-1. Install Go 1.21 or later
-2. Clone the repository
-3. Build and run:
-   ```bash
-   go build -o ipapi ./cmd/ipapi
-   ./ipapi --db-path /path/to/geoip/databases
-   ```
+```bash
+# Recommended production settings
+LOG_LEVEL=warn              # Reduce logging overhead
+CACHE_TTL_MINUTES=10        # Longer cache for better hit ratio
+LOG_FORMAT=json             # Structured logging for monitoring
+```
 
+For **development**:
+```bash
+# Development settings
+LOG_LEVEL=debug             # Detailed logging
+CACHE_TTL_MINUTES=1         # Short cache for testing
+LOG_FORMAT=console          # Human-readable logs
+```
+
+## Benchmarking & Monitoring
+
+### Performance Testing
+
+**Quick Benchmark:**
+```bash
+# Run the included benchmark script
+chmod +x benchmark.sh
+./benchmark.sh
+```
+
+**Manual Testing:**
+```bash
+# Simple response time test
+time curl -s "http://localhost:3280/8.8.8.8" > /dev/null
+
+# Load testing with Apache Bench (if installed)
+ab -n 1000 -c 10 http://localhost:3280/8.8.8.8
+
+# Health check monitoring
+curl -w "@curl-format.txt" -s "http://localhost:3280/health"
+```
+
+Create `curl-format.txt` for detailed timing:
+```
+     time_namelookup:  %{time_namelookup}s\n
+        time_connect:  %{time_connect}s\n
+     time_appconnect:  %{time_appconnect}s\n
+    time_pretransfer:  %{time_pretransfer}s\n
+       time_redirect:  %{time_redirect}s\n
+  time_starttransfer:  %{time_starttransfer}s\n
+                     ----------\n
+          time_total:  %{time_total}s\n
+```
+
+### Cache Statistics
+
+Monitor cache performance by checking logs for cache hit/miss patterns. In debug mode, you'll see detailed timing information.
 
 ## License
 

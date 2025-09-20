@@ -42,7 +42,6 @@ docker-compose*.yml
 .github/
 
 # Scripts
-setup.sh
 *.sh
 
 # Logs

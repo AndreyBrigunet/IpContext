@@ -69,12 +69,10 @@ func (s *Server) extractClientIP(r *http.Request) string {
 }
 
 func (s *Server) handleHealth(w http.ResponseWriter, r *http.Request) {
-	health := map[string]interface{}{
-		"status": "ok",
-		"timestamp": time.Now().UTC().Format(time.RFC3339),
-	}
-
-	s.respondJSON(w, health, http.StatusOK)
+	// Ultra-fast health check - no JSON encoding overhead
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(`{"status":"ok"}`))
 }
 
 func NewServer(addr string, geoIP *geoip.GeoIP, logger zerolog.Logger) *Server {
@@ -87,15 +85,17 @@ func NewServer(addr string, geoIP *geoip.GeoIP, logger zerolog.Logger) *Server {
 	r.HandleFunc("/", s.handleRoot)
 	r.HandleFunc("/health", s.handleHealth)
 	
-	// Apply middleware
-	handler := s.corsMiddleware(s.loggingMiddleware(s.recoveryMiddleware(r)))
+	// Apply minimal middleware for performance
+	handler := s.corsMiddleware(s.recoveryMiddleware(r))
 	
 	s.server = &http.Server{
-		Addr:         addr,
-		Handler:      handler,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 15 * time.Second,
-		IdleTimeout:  60 * time.Second,
+		Addr:              addr,
+		Handler:           handler,
+		ReadTimeout:       5 * time.Second,
+		WriteTimeout:      5 * time.Second,
+		IdleTimeout:       30 * time.Second,
+		ReadHeaderTimeout: 2 * time.Second,
+		MaxHeaderBytes:    1 << 16, // 64KB
 	}
 
 	return s
@@ -123,6 +123,7 @@ func (s *Server) respondError(w http.ResponseWriter, message string, statusCode 
 
 func (s *Server) respondJSON(w http.ResponseWriter, data interface{}, statusCode int) {
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Cache-Control", "public, max-age=300")
 	w.WriteHeader(statusCode)
 
 	if err := json.NewEncoder(w).Encode(data); err != nil {

@@ -12,6 +12,9 @@ services:
       - GEONAMES_USERNAME=${GEONAMES_USERNAME:-}
       - NEIGHBOURS_UPDATE_HOURS=${NEIGHBOURS_UPDATE_HOURS:-168}
       - LANGUAGES_UPDATE_HOURS=${LANGUAGES_UPDATE_HOURS:-168}
+      - CACHE_TTL_MINUTES=${CACHE_TTL_MINUTES:-5}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_FORMAT=${LOG_FORMAT:-console}
     depends_on:
       - geoip-update
     restart: unless-stopped

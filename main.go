@@ -26,11 +26,12 @@ func main() {
 		TimeFormat: cfg.LogTimeFmt,
 	})
 
-	logger.Info().Msg("Starting IP API service v1.0.1")
+	logger.Info().Msg("Starting IP API service v1.0.2")
 
 	neighStore, langStore := initializeStores(cfg, logger)
 
-	geoIP, err := geoip.New(cfg.DBPath, neighStore, langStore, logger)
+	cacheTTL := time.Duration(cfg.CacheTTLMinutes) * time.Minute
+	geoIP, err := geoip.New(cfg.DBPath, neighStore, langStore, logger, cacheTTL)
 	if err != nil {
 		logger.Fatal().
 			Err(err).

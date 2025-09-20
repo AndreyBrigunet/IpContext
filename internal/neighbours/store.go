@@ -89,6 +89,8 @@ func (s *Store) refreshAll() {
 			s.log.Warn().Err(err).Str("country", cc).Msg("Failed to refresh neighbours")
 		}
 
+		s.log.Debug().Str("country", cc).Msg("Refreshed neighbours")
+
 		time.Sleep(1100 * time.Millisecond)
 	}
 

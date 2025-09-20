@@ -1,6 +1,7 @@
 package geoip
 
 import (
+	"context"
 	"errors"
 	"net"
 	"path/filepath"
@@ -78,9 +79,21 @@ func New(dbPath string, neigh *neighbours.Store, langs *languages.Store, logger 
 
 // Lookup performs an IP address lookup
 func (g *GeoIP) Lookup(ipStr string) (*Response, error) {
+	return g.LookupWithContext(context.Background(), ipStr)
+}
+
+// LookupWithContext performs an IP address lookup with context
+func (g *GeoIP) LookupWithContext(ctx context.Context, ipStr string) (*Response, error) {
 	ip := net.ParseIP(ipStr)
 	if ip == nil {
 		return nil, errors.New("invalid IP address")
+	}
+
+	// Check if context is cancelled
+	select {
+	case <-ctx.Done():
+		return nil, ctx.Err()
+	default:
 	}
 
 	// Lookup city data

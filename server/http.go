@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/rs/zerolog"
-	"github.com/andreybrigunet/ipapi/internal/geoip"
+	"github.com/andreybrigunet/ipapi/geoip"
 )
 
 type Server struct {

@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/andreybrigunet/ipapi/internal/neighbours"
-	"github.com/andreybrigunet/ipapi/internal/languages"
+	"github.com/andreybrigunet/ipapi/neighbours"
+	"github.com/andreybrigunet/ipapi/languages"
 	"github.com/oschwald/geoip2-golang"
 	"github.com/rs/zerolog"
 )

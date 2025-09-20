@@ -7,13 +7,13 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/andreybrigunet/ipapi/internal/config"
-	"github.com/andreybrigunet/ipapi/internal/coordinator"
-	"github.com/andreybrigunet/ipapi/internal/geoip"
-	"github.com/andreybrigunet/ipapi/internal/languages"
-	"github.com/andreybrigunet/ipapi/internal/logx"
-	"github.com/andreybrigunet/ipapi/internal/neighbours"
-	"github.com/andreybrigunet/ipapi/internal/server"
+	"github.com/andreybrigunet/ipapi/config"
+	"github.com/andreybrigunet/ipapi/coordinator"
+	"github.com/andreybrigunet/ipapi/geoip"
+	"github.com/andreybrigunet/ipapi/languages"
+	"github.com/andreybrigunet/ipapi/logx"
+	"github.com/andreybrigunet/ipapi/neighbours"
+	"github.com/andreybrigunet/ipapi/server"
 	"github.com/rs/zerolog"
 )
 

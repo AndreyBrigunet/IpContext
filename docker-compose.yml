@@ -1,6 +1,6 @@
 services:
   geoip-app:
-    image: ghcr.io/andreybrigunet/ipapi:latest
+    image: ghcr.io/andreybrigunet/IpContext:latest
     pull_policy: always
     ports:
       - "3280:3280"

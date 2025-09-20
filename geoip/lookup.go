@@ -9,9 +9,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/andreybrigunet/ipapi/cache"
-	"github.com/andreybrigunet/ipapi/neighbours"
-	"github.com/andreybrigunet/ipapi/languages"
+	"github.com/andreybrigunet/IpContext/cache"
+	"github.com/andreybrigunet/IpContext/neighbours"
+	"github.com/andreybrigunet/IpContext/languages"
 	"github.com/oschwald/geoip2-golang"
 	"github.com/rs/zerolog"
 )

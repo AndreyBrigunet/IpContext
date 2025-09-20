@@ -1,10 +1,10 @@
 # 🌍 IpContext - Open-Source IP Metadata API
 
-[![Go Report Card](https://goreportcard.com/badge/github.com/andreybrigunet/ipapi)](https://goreportcard.com/report/github.com/andreybrigunet/ipapi)
+[![Go Report Card](https://goreportcard.com/badge/github.com/andreybrigunet/IpContext)](https://goreportcard.com/report/github.com/andreybrigunet/IpContext)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Docker Pulls](https://img.shields.io/docker/pulls/andreybrigunet/ipapi)](https://hub.docker.com/r/andreybrigunet/ipapi)
-[![Go Version](https://img.shields.io/github/go-mod/go-version/andreybrigunet/ipapi)](https://golang.org/)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/andreybrigunet/ipapi/ci.yml?branch=main)](https://github.com/andreybrigunet/ipapi/actions)
+[![Docker Pulls](https://img.shields.io/docker/pulls/andreybrigunet/IpContext)](https://hub.docker.com/r/andreybrigunet/IpContext)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/andreybrigunet/IpContext)](https://golang.org/)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/andreybrigunet/IpContext/ci.yml?branch=main)](https://github.com/andreybrigunet/IpContext/actions)
 
 **IpContext** is a high-performance, open-source IP geolocation and metadata API service built with Go. Get comprehensive information about any IP address including geolocation, ISP details, timezone, currency, neighboring countries, and supported languages - all in a single, lightning-fast API call.
 
@@ -45,8 +45,8 @@
 
 1. **Clone the repository:**
 ```bash
-git clone https://github.com/andreybrigunet/ipapi.git
-cd ipapi
+git clone https://github.com/andreybrigunet/IpContext.git
+cd IpContext
 ```
 
 2. **Set up environment:**
@@ -171,7 +171,7 @@ The included `docker-compose.yml` provides a complete production setup:
 ```yaml
 services:
   geoip-app:
-    image: ghcr.io/andreybrigunet/ipapi:latest
+    image: ghcr.io/andreybrigunet/IpContext:latest
     ports:
       - "3280:3280"
     volumes:
@@ -208,10 +208,11 @@ volumes:
 
 ```bash
 # Clone and build
-git clone https://github.com/andreybrigunet/ipapi.git
-cd ipapi
+git clone https://github.com/andreybrigunet/IpContext.git
+cd IpContext
 
 # Use development compose file
+docker compose -f docker-compose.dev.yml build --no-cache
 docker compose -f docker-compose.dev.yml up -d
 
 # View logs
@@ -221,7 +222,7 @@ docker compose logs -f geoip-app
 ## 📁 Project Structure
 
 ```
-ipapi/
+IpContext/
 ├── 📄 main.go                    # Application entry point & coordinator
 ├── 📁 config/
 │   └── config.go                 # Configuration management
@@ -311,7 +312,7 @@ We welcome contributions! Please follow these steps:
 
 We love contributions! Here's how you can help:
 
-- 🐛 **Report bugs** via [GitHub Issues](https://github.com/andreybrigunet/ipapi/issues)
+- 🐛 **Report bugs** via [GitHub Issues](https://github.com/andreybrigunet/IpContext/issues)
 - 📖 **Improve documentation**
 - 🧪 **Add tests** for better coverage
 - 🚀 **Submit pull requests**
@@ -329,7 +330,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 
 ## 📞 Support & Community
 
-- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/andreybrigunet/ipapi/issues)
+- 🐛 **Bug Reports**: [GitHub Issues](https://github.com/andreybrigunet/IpContext/issues)
 
 ---
 

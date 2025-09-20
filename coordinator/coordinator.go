@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/andreybrigunet/ipapi/languages"
-	"github.com/andreybrigunet/ipapi/neighbours"
+	"github.com/andreybrigunet/IpContext/languages"
+	"github.com/andreybrigunet/IpContext/neighbours"
 	"github.com/rs/zerolog"
 )
 

@@ -1,4 +1,4 @@
-module github.com/andreybrigunet/ipapi
+module github.com/andreybrigunet/IpContext
 
 go 1.21
 

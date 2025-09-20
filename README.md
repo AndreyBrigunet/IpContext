@@ -57,7 +57,7 @@ cp .env.example .env
 
 3. **Start the service:**
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 4. **Test the API:**
@@ -66,19 +66,6 @@ curl http://localhost:3280/8.8.8.8
 ```
 
 The API will be available at `http://localhost:3280` 🎉
-
-### Local Development
-
-**Prerequisites:** Go 1.21+ and MaxMind GeoLite2 databases
-
-```bash
-# Clone and build
-git clone https://github.com/andreybrigunet/ipapi.git
-cd ipapi
-
-docker compose -f docker-compose.dev.yml build --no-cache
-docker compose -f docker-compose.dev.yml up -d
-```
 
 ## 📡 API Usage
 
@@ -220,14 +207,15 @@ volumes:
 ### **Development Setup**
 
 ```bash
+# Clone and build
+git clone https://github.com/andreybrigunet/ipapi.git
+cd ipapi
+
 # Use development compose file
-docker-compose -f docker-compose.dev.yml up -d
+docker compose -f docker-compose.dev.yml up -d
 
 # View logs
-docker-compose logs -f geoip-app
-
-# Scale for load testing
-docker-compose up -d --scale geoip-app=3
+docker compose logs -f geoip-app
 ```
 
 ## 📁 Project Structure

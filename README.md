@@ -69,6 +69,11 @@ The API will be available at `http://localhost:3280` 🎉
 
 ## 📡 API Usage
 
+### **Health Check**
+```bash
+curl http://localhost:3280/health
+```
+
 ### **Get Your IP Information**
 ```bash
 curl http://localhost:3280/
@@ -77,11 +82,6 @@ curl http://localhost:3280/
 ### **Query Specific IP**
 ```bash
 curl http://localhost:3280/8.8.8.8
-```
-
-### **Health Check**
-```bash
-curl http://localhost:3280/health
 ```
 
 ### **Response Format**
@@ -104,7 +104,6 @@ curl http://localhost:3280/health
   "offset": -18000,
   "currencyCode": "USD",
   "currencySymbol": "$",
-  "currencyConverter": 1.0,
   "isp": "GOOGLE",
   "org": "GOOGLE",
   "as": "AS15169 GOOGLE",
@@ -113,6 +112,10 @@ curl http://localhost:3280/health
     {
       "countryCode": "CA",
       "countryName": "Canada"
+    },
+    {
+      "countryCode": "CU",
+      "countryName": "Cuba"
     },
     {
       "countryCode": "MX", 
@@ -159,7 +162,6 @@ GEOIPUPDATE_LICENSE_KEY=your_license_key
 
 # Optional: Enhanced features
 GEONAMES_USERNAME=your_geonames_username
-ENABLE_CURRENCY_CONVERTER=true
 ```
 
 ## 🐳 Docker Deployment

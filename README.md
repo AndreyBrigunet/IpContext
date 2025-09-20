@@ -18,6 +18,8 @@ A high-performance IP geolocation service similar to ip-api.com, built with Go a
 
 ## Getting Started
 
+### Production Deployment (Using Pre-built Images)
+
 1. **Get MaxMind License Key**
    - Sign up at [MaxMind](https://www.maxmind.com/en/geolite2/signup)
    - Create a license key in your account settings
@@ -27,18 +29,41 @@ A high-performance IP geolocation service similar to ip-api.com, built with Go a
    ```
    GEOIPUPDATE_ACCOUNT_ID=your_account_id
    GEOIPUPDATE_LICENSE_KEY=your_license_key
+   GEONAMES_USERNAME=your_geonames_username
    ```
 
-3. **Build and Run**
+3. **Deploy with Pre-built Image**
    ```bash
-   docker compose build --no-cache
-   docker compose up -d
+   docker compose -f docker-compose.dev.yml build --no-cache
+   docker compose -f docker-compose.dev.yml up -d
    ```
 
 4. **Verify the Service**
    ```bash
    curl "http://localhost:3280/"
+   curl "http://localhost:3280/health"
    ```
+
+### Development Setup (Local Build)
+
+For development with local builds:
+```bash
+docker compose -f docker-compose.dev.yml up -d
+```
+
+### GitHub Actions CI/CD
+
+This project uses GitHub Actions for automated building and publishing of Docker images:
+
+1. **Automatic Builds**: Every push to `main`/`master` branch triggers a build
+2. **Multi-platform**: Builds for both `linux/amd64` and `linux/arm64`
+3. **Security Scanning**: Includes Trivy vulnerability scanning
+4. **Container Registry**: Images are published to GitHub Container Registry (ghcr.io)
+
+**Available Image Tags:**
+- `ghcr.io/andreybrigunet/ipapi:latest` - Latest stable build
+- `ghcr.io/andreybrigunet/ipapi:main` - Latest main branch build
+- `ghcr.io/andreybrigunet/ipapi:v1.0.0` - Specific version tags
 
 ## API Endpoints
 
@@ -46,6 +71,7 @@ A high-performance IP geolocation service similar to ip-api.com, built with Go a
 
 - `GET /` — returns info for the requester IP.
 - `GET /:ip` — returns info for the specified IP (e.g., `/8.8.8.8`).
+- `GET /health` — health check endpoint.
 
 **Example Requests:**
 ```bash

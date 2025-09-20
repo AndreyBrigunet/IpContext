@@ -2,9 +2,8 @@
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/andreybrigunet/IpContext)](https://goreportcard.com/report/github.com/andreybrigunet/IpContext)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Docker Pulls](https://img.shields.io/docker/pulls/andreybrigunet/IpContext)](https://hub.docker.com/r/andreybrigunet/IpContext)
 [![Go Version](https://img.shields.io/github/go-mod/go-version/andreybrigunet/IpContext)](https://golang.org/)
-[![Build Status](https://img.shields.io/github/actions/workflow/status/andreybrigunet/IpContext/ci.yml?branch=main)](https://github.com/andreybrigunet/IpContext/actions)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/andreybrigunet/IpContext/docker-build.yml?branch=master)](https://github.com/andreybrigunet/IpContext/actions)
 
 **IpContext** is a high-performance, open-source IP geolocation and metadata API service built with Go. Get comprehensive information about any IP address including geolocation, ISP details, timezone, currency, neighboring countries, and supported languages - all in a single, lightning-fast API call.
 
@@ -171,15 +170,21 @@ The included `docker-compose.yml` provides a complete production setup:
 ```yaml
 services:
   geoip-app:
-    image: ghcr.io/andreybrigunet/IpContext:latest
+    image: ghcr.io/andreybrigunet/ipcontext:latest
+    pull_policy: always
     ports:
       - "3280:3280"
     volumes:
       - geoip_data:/app/data
     environment:
+      - TZ=UTC
       - DB_PATH=/app/data
       - GEONAMES_USERNAME=${GEONAMES_USERNAME:-}
+      - NEIGHBOURS_UPDATE_HOURS=${NEIGHBOURS_UPDATE_HOURS:-168}
+      - LANGUAGES_UPDATE_HOURS=${LANGUAGES_UPDATE_HOURS:-168}
+      - CACHE_TTL_MINUTES=${CACHE_TTL_MINUTES:-5}
       - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_FORMAT=${LOG_FORMAT:-console}
     depends_on:
       - geoip-update
     restart: unless-stopped
@@ -191,11 +196,14 @@ services:
 
   geoip-update:
     image: maxmindinc/geoipupdate:latest
+    env_file:
+      - .env
     environment:
       - GEOIPUPDATE_ACCOUNT_ID=${MM_ACCOUNT_ID}
       - GEOIPUPDATE_LICENSE_KEY=${MM_LICENSE_KEY}
       - GEOIPUPDATE_EDITION_IDS=GeoLite2-City GeoLite2-ASN
       - GEOIPUPDATE_FREQUENCY=24
+      - GEOIPUPDATE_DB_DIR=/geoip_data
     volumes:
       - geoip_data:/geoip_data
     restart: unless-stopped
@@ -297,6 +305,8 @@ We welcome contributions! Please follow these steps:
 - [ ] **Audit Logging**: Comprehensive request logging
 - [ ] **SLA Monitoring**: Service level agreement tracking
 - [ ] **Multi-tenancy**: Isolated environments per customer
+
+- [ ] **IP2Proxy**: integration
 
 ## 📊 Performance Benchmarks
 

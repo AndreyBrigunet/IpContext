@@ -1,13 +1,13 @@
 services:
   geoip-app:
-    image: ghcr.io/andreybrigunet/IpContext:latest
+    image: ghcr.io/andreybrigunet/ipcontext:latest
     pull_policy: always
     ports:
       - "3280:3280"
     volumes:
       - geoip_data:/app/data
     environment:
-      - TZ=Europe/Chisinau
+      - TZ=UTC
       - DB_PATH=/app/data
       - GEONAMES_USERNAME=${GEONAMES_USERNAME:-}
       - NEIGHBOURS_UPDATE_HOURS=${NEIGHBOURS_UPDATE_HOURS:-168}

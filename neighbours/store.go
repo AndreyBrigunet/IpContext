@@ -16,7 +16,6 @@ type Neighbour struct {
 	CountryName string `json:"countryName"`
 }
 
-// RefreshAllOnce triggers a single full refresh cycle.
 func (s *Store) RefreshAllOnce() {
     s.refreshAll()
 }
@@ -74,11 +73,6 @@ func (s *Store) Start(stop <-chan struct{}) {
 			}
 		}
 	}()
-}
-
-// RefreshAll triggers a single full refresh cycle.
-func (s *Store) RefreshAll() {
-	s.refreshAll()
 }
 
 func (s *Store) refreshAll() {

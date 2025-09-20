@@ -80,11 +80,9 @@ func (s *Store) refreshAll() {
 	}
 }
 
-// RefreshAllOnce triggers a single full refresh cycle.
-func (s *Store) RefreshAllOnce() { s.refreshAll() }
-
-// RefreshAll is an alias for RefreshAllOnce for symmetry with neighbours.
-func (s *Store) RefreshAll() { s.refreshAll() }
+func (s *Store) RefreshAllOnce() { 
+	s.refreshAll()
+}
 
 func (s *Store) refresh(countryCode string) error {
 	url := fmt.Sprintf("http://api.geonames.org/countryInfoJSON?country=%s&username=%s", countryCode, s.username)

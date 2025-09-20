@@ -14,8 +14,8 @@
 ### 🌐 **Comprehensive IP Intelligence**
 - **Geolocation Data**: Country, region, city, coordinates, timezone
 - **ISP & ASN Information**: Internet Service Provider, Organization, Autonomous System details
-- **Currency Information**: Currency codes, symbols, and conversion rates
-- **Country Neighbors**: List of bordering countries with names
+- **Currency Information**: Currency codes, symbols
+- **Country Neighbors**: List of neighboring countries with names
 - **Language Support**: Supported languages for each country
 - **EU Membership**: European Union membership status
 
@@ -58,6 +58,7 @@ cp .env.example .env
 ```bash
 docker compose up -d
 ```
+
 
 4. **Test the API:**
 ```bash
@@ -153,8 +154,8 @@ Configure IpContext via environment variables or command-line flags:
 
 ```bash
 # .env file
-MM_ACCOUNT_ID=your_account_id
-MM_LICENSE_KEY=your_license_key
+GEOIPUPDATE_ACCOUNT_ID=your_account_id
+GEOIPUPDATE_LICENSE_KEY=your_license_key
 
 # Optional: Enhanced features
 GEONAMES_USERNAME=your_geonames_username
@@ -227,93 +228,28 @@ docker compose -f docker-compose.dev.yml up -d
 docker compose logs -f geoip-app
 ```
 
-## 📁 Project Structure
-
-```
-IpContext/
-├── 📄 main.go                    # Application entry point & coordinator
-├── 📁 config/
-│   └── config.go                 # Configuration management
-├── 📁 server/
-│   └── http.go                   # HTTP server, handlers & middleware
-├── 📁 geoip/
-│   ├── geoip.go                  # Core IP lookup logic
-│   ├── response.go               # Response structures
-│   └── countries.go              # Country code mappings
-├── 📁 neighbours/
-│   └── store.go                  # Country neighbors via GeoNames API
-├── 📁 languages/
-│   └── store.go                  # Country languages via GeoNames API
-├── 📁 coordinator/
-│   └── coordinator.go            # Periodic update coordination
-├── 📁 logx/
-│   └── logger.go                 # Structured logging with zerolog
-├── 📁 cache/
-│   └── cache.go                  # High-performance in-memory caching
-├── 🐳 docker-compose.yml         # Production deployment
-├── 🐳 docker-compose.dev.yml     # Development environment
-├── 🐳 Dockerfile                 # Multi-stage container build
-├── 📋 .env.example               # Environment configuration template
-└── 📖 README.md                  # This documentation
-```
-
-
 ### **Performance Testing**
 
 ```bash
 # Load test with included script
 ./benchmark.sh
-
-# Manual testing with curl
-curl -w "@curl-format.txt" -s http://localhost:3280/8.8.8.8
-
-# Concurrent requests
-seq 1 1000 | xargs -n1 -P10 -I{} curl -s http://localhost:3280/8.8.8.8 > /dev/null
 ```
-
-### **Contributing**
-
-We welcome contributions! Please follow these steps:
-
-1. **Fork** the repository
-2. **Create** a feature branch: `git checkout -b feature/amazing-feature`
-3. **Make** your changes and add tests
-4. **Ensure** tests pass: `go test ./...`
-5. **Commit** your changes: `git commit -m 'Add amazing feature'`
-6. **Push** to the branch: `git push origin feature/amazing-feature`
-7. **Submit** a pull request
 
 ## 🗺️ Roadmap
 
 ### **Upcoming Features**
 - [ ] **Rate Limiting**: Configurable rate limiting per IP/API key
 - [ ] **Metrics & Monitoring**: Prometheus metrics endpoint
-- [ ] **Enhanced IPv6**: Improved IPv6 geolocation accuracy
 - [ ] **API Authentication**: Optional API key system
 - [ ] **Batch Processing**: Multiple IP lookups in single request
-- [ ] **WebSocket Support**: Real-time IP monitoring
-- [ ] **CLI Tool**: Command-line interface for batch operations
 
-### **Performance Improvements**
-- [ ] **Redis Caching**: Distributed caching support
-- [ ] **Load Balancing**: Built-in load balancer
-- [ ] **CDN Integration**: Edge caching capabilities
-- [ ] **Database Sharding**: Horizontal scaling support
-
-### **Enterprise Features**
-- [ ] **Custom Databases**: Support for custom IP databases
-- [ ] **Audit Logging**: Comprehensive request logging
-- [ ] **SLA Monitoring**: Service level agreement tracking
-- [ ] **Multi-tenancy**: Isolated environments per customer
-
-- [ ] **IP2Proxy**: integration
 
 ## 📊 Performance Benchmarks
 
 | Metric | Value |
 |--------|-------|
-| **Response Time** | < 1ms (cached) |
-| **Throughput** | 10,000+ req/sec |
+| **Response Time** | 1.827 [ms] |
+| **Throughput** | 5474.95 [#/sec] |
 | **Memory Usage** | < 50MB |
 | **Database Size** | ~100MB (GeoLite2) |
 | **Cold Start** | < 2 seconds |

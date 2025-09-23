@@ -26,7 +26,7 @@ func main() {
 		TimeFormat: cfg.LogTimeFmt,
 	})
 
-	logger.Info().Msg("Starting IP API service v1.0.2")
+	logger.Info().Msg("Starting IP API service v1.0.3")
 
 	neighStore, langStore := initializeStores(cfg, logger)
 

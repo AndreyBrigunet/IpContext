@@ -78,6 +78,8 @@ func (s *Store) refreshAll() {
 
 		time.Sleep(1100 * time.Millisecond)
 	}
+
+	s.log.Info().Msg("Languages updated")
 }
 
 func (s *Store) RefreshAllOnce() { 
